@@ -631,6 +631,19 @@ await restoreSessions()
 
 }
 */
+const express = require('express');
+const PORT = process.env.PORT || 3000;
+
+// route simple
+app.get('/', (req, res) => {
+  res.send('WhatsApp AI bot is running 🚀');
+});
+
+// IMPORTANT
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 
 const express = require("express")
 const bodyParser = require("body-parser")
