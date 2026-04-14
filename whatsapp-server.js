@@ -983,7 +983,7 @@ if(msg.message.audioMessage){
         let sellerName = "ce vendeur"
 
         try{
-            const res = await fetch(`http://localhost:8000/api/seller/${seller_id}`)
+            const res = await fetch(`https://whatsapp-seller-ai-1.onrender.com/api/seller/${seller_id}`)
             const data = await res.json()
 
             if(data.assistant_name){
@@ -1130,7 +1130,7 @@ async function updateBotStatus(seller_id, status){
 
 try{
 
-await fetch("http://localhost:8000/api/bot_status",{
+await fetch("https://whatsapp-seller-ai-1.onrender.com/api/bot_status",{
 
 method:"POST",
 
@@ -1418,7 +1418,7 @@ try{
 let subCheck
 
 try{
-    subCheck = await fetch(`http://localhost:8000/api/check_subscription/${seller_id}`)
+    subCheck = await fetch(`https://whatsapp-seller-ai-1.onrender.coms/api/check_subscription/${seller_id}`)
     const subData = await subCheck.json()
 
     if(!subData.active){
