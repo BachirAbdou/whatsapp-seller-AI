@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+background:#020617;
+color:white;
+font-family:Inter,sans-serif;
+}
+
+.sidebar{
+background:#020617;
+border-right:1px solid #1e293b;
+}
+
+.nav-link{
+display:block;
+padding:12px;
+border-radius:8px;
+color:#cbd5e1;
+}
+
+.nav-link:hover{
+background:#1e293b;
+color:white;
+}
+
+.card{
+background:#1e293b;
+padding:24px;
+border-radius:14px;
+border:1px solid #334155;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="flex h-screen">
+
+<!-- ADMIN SIDEBAR -->
+
+<div class="sidebar w-64 p-6 flex flex-col">
+
+<h2 class="text-xl font-bold mb-8">
+Admin Panel
+</h2>
+
+<nav class="space-y-2">
+
+<a href="/admin" class="nav-link">📊 Dashboard</a>
+
+<a href="/admin/sellers" class="nav-link">👥 Sellers</a>
+
+<a href="/admin/orders" class="nav-link">📦 Orders</a>
+
+<a href="/admin/subscriptions" class="nav-link">💳 Subscriptions</a>
+
+<a href="/admin/settings" class="nav-link">⚙️ Settings</a>
+
+</nav>
+
+<!-- 🔴 LOGOUT EN BAS -->
+<form method="post" action="/admin/admin_logout">
+<button
+class="w-full mt-6 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-medium"
+>
+🚪 Déconnexion
+</button>
+</form>
+
+</div>
+
+<!-- CONTENT -->
+
+<div class="flex-1 p-10 overflow-y-auto">
+
+{% block content %}
+{% endblock %}
+
+</div>
+
+</div>
+
+</body>
+</html>

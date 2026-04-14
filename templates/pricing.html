@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Abonnement</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:'Inter',sans-serif;
+background:#0f172a;
+}
+
+.blur-bg{
+position:absolute;
+width:700px;
+height:700px;
+background:radial-gradient(circle,#6366f1 0%,transparent 70%);
+filter:blur(120px);
+top:-200px;
+left:-200px;
+z-index:-1;
+}
+</style>
+
+</head>
+
+<body class="relative text-white flex flex-col items-center justify-center min-h-screen px-4">
+
+<div class="blur-bg"></div>
+
+<div class="absolute top-4 right-4">
+    <a href="/logout"
+        onclick="return confirm('Voulez-vous vraiment vous déconnecter ?')"
+        class="bg-slate-800 hover:bg-slate-700 text-red-400 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700">
+        🚪 Déconnexion
+    </a>
+</div>
+
+<h1 class="text-4xl font-bold mb-4 text-center">
+Abonnement mensuel
+</h1>
+
+<!-- ✅ MESSAGES ICI -->
+{% if request.query_params.get("payment") == "already" %}
+<div class="bg-orange-500/20 text-orange-300 p-4 rounded mb-6 text-center">
+⚠️ Vous avez déjà envoyé une demande.  
+Veuillez patienter.
+</div>
+{% endif %}
+
+{% if request.query_params.get("payment") == "active" %}
+<div class="bg-green-500/20 text-green-300 p-4 rounded mb-6 text-center">
+✅ Votre abonnement est déjà actif.
+</div>
+{% endif %}
+
+<p class="text-slate-400 mb-10 text-center max-w-md">
+Activez votre assistant WhatsApp et commencez à recevoir des commandes automatiquement.
+</p>
+
+<!-- PLAN UNIQUE -->
+
+<div class="bg-slate-900 p-8 rounded-2xl border border-indigo-500 w-full max-w-sm text-center">
+
+<h2 class="text-xl font-bold mb-2">
+Plan WhatsApp Business
+</h2>
+
+<p class="text-4xl font-bold mb-6">
+3000 FCFA
+<span class="text-sm text-slate-400">/mois</span>
+</p>
+
+<ul class="text-slate-300 mb-6 space-y-2 text-left">
+
+<li>✔ 1 assistant WhatsApp</li>
+<li>✔ Réponses automatiques</li>
+<li>✔ Commandes illimitées</li>
+<li>✔ Dashboard complet</li>
+
+</ul>
+
+<!-- ETAPE PAIEMENT -->
+
+<div class="bg-slate-800 p-4 rounded mb-6 text-sm text-slate-300">
+
+<p class="mb-2 font-semibold text-white">
+Paiement via Mynita
+</p>
+
+<p>1. Envoyez <strong>3000 FCFA</strong> au numéro :</p>
+
+<p class="text-indigo-400 font-bold text-lg mt-2">
++227 86 81 02 08
+</p>
+
+<p class="mt-3">
+2. Cliquez sur "J'ai payé"
+</p>
+
+</div>
+
+<button onclick="openModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 p-3 rounded-lg font-semibold">
+
+J'ai payé
+
+</button>
+
+</div>
+
+<div id="paymentModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
+
+<div class="bg-slate-900 p-6 rounded-xl w-96">
+
+<h2 class="text-xl font-bold mb-4">
+Confirmer votre paiement
+</h2>
+
+<p class="text-slate-400 text-sm mb-4">
+Entrez le nom utilisé sur Mynita
+</p>
+
+<form method="post" action="/subscribe/declare-payment">
+
+<input
+type="text"
+name="mynita_name"
+placeholder="Nom Mynita"
+required
+class="w-full p-3 rounded bg-slate-800 border border-slate-700 mb-4"
+/>
+
+<div class="flex justify-between">
+
+<button type="button" onclick="closeModal()"
+class="text-slate-400">
+Annuler
+</button>
+
+<button class="bg-green-600 px-4 py-2 rounded">
+Confirmer
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+function openModal(){
+    document.getElementById("paymentModal").classList.remove("hidden")
+}
+
+function closeModal(){
+    document.getElementById("paymentModal").classList.add("hidden")
+}
+</script>
+
+<!-- BONUS TRUST -->
+
+<p class="text-slate-500 text-sm mt-8 text-center">
+✔ Activation juste après validation
+</p>
+
+</body>
+</html>

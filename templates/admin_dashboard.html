@@ -1,0 +1,181 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="flex">
+
+<div class="flex-1 p-10">
+
+<!-- HEADER -->
+
+<div class="flex items-center justify-between mb-8">
+
+<!-- 🔹 LEFT -->
+<div>
+<h1 class="text-3xl font-bold">
+Admin Dashboard
+</h1>
+
+<p class="text-sm text-slate-400 mt-2">
+Connecté en tant que :
+<span class="text-white font-semibold">
+{{ admin.email }}
+</span>
+
+<span class="ml-2 text-xs px-2 py-1 rounded bg-slate-700">
+{{ admin.role }}
+</span>
+</p>
+</div>
+
+<!-- 🔹 RIGHT -->
+<a href="/admin/create_admin"
+class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-medium">
+Créer Admin
+</a>
+
+</div>
+
+<!-- STATS -->
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+
+<div class="card">
+<p class="text-slate-400">Vendeurs</p>
+<p class="text-4xl font-bold mt-2">{{ sellers }}</p>
+</div>
+
+<div class="card">
+<p class="text-slate-400">Commandes</p>
+<p class="text-4xl font-bold mt-2">{{ orders }}</p>
+</div>
+
+<div class="card">
+<p class="text-slate-400">Messages</p>
+<p class="text-4xl font-bold mt-2">{{ messages }}</p>
+</div>
+
+<div class="card">
+<p class="text-slate-400">Bots actifs</p>
+<p class="text-4xl font-bold mt-2">{{ bots }}</p>
+</div>
+
+</div>
+
+<!-- GRAPH -->
+
+<div class="card mb-10">
+
+<h2 class="text-xl font-semibold mb-4">
+Activité plateforme
+</h2>
+
+<canvas id="activityChart"></canvas>
+
+</div>
+
+<!-- RECENT USERS -->
+
+<div class="card">
+
+<h2 class="text-xl font-semibold mb-4">
+Derniers utilisateurs
+</h2>
+
+<table class="w-full text-left">
+
+<thead>
+
+<tr class="border-b border-slate-700 text-slate-400">
+<th class="py-3">ID</th>
+<th>Nom</th>
+<th>Email</th>
+<th>Rôle</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for s in recent_sellers %}
+
+<tr class="border-b border-slate-800">
+
+<td class="py-3">{{ s.id }}</td>
+
+<td>{{ s.name }}</td>
+
+<td>{{ s.email }}</td>
+
+<td>
+
+{% if s.role == "superadmin" %}
+<span class="text-red-400 font-semibold">
+Super Admin
+</span>
+
+{% elif s.role == "admin" %}
+<span class="text-yellow-400 font-semibold">
+Admin
+</span>
+
+{% else %}
+<span class="text-green-400">
+Seller
+</span>
+{% endif %}
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+async function loadChart(){
+
+    const res = await fetch("/api/activity")
+    const data = await res.json()
+
+    const labels = data.map(d => d.day)
+    const values = data.map(d => d.count)
+
+    const ctx = document.getElementById("activityChart")
+
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Messages",
+                data: values,
+                borderColor: "#6366f1",
+                backgroundColor: "rgba(99,102,241,0.1)",
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
+            }
+        }
+    })
+}
+
+document.addEventListener("DOMContentLoaded", loadChart)
+</script>
+
+{% endblock %}

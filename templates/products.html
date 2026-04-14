@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto">
+
+<div class="flex items-center justify-between mb-10">
+  <div>
+    <h1 class="text-3xl font-bold">Mes Produits</h1>
+    <p class="text-slate-400 text-sm mt-1">{{ products|length }} produit{% if products|length > 1 %}s{% endif %} dans votre catalogue</p>
+  </div>
+  <a href="/dashboard/products/new"
+    class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl font-medium text-sm transition">
+    + Ajouter un produit
+  </a>
+</div>
+
+{% if products %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+{% for product in products %}
+
+<div class="bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden hover:border-indigo-500/40 hover:-translate-y-1 transition-all duration-200">
+
+  {% if product.image %}
+  <img src="/{{ product.image }}" class="w-full h-48 object-cover"/>
+  {% else %}
+  <div class="w-full h-48 bg-slate-800 flex items-center justify-center text-4xl">🏷️</div>
+  {% endif %}
+
+  <div class="p-5">
+
+    <h2 class="text-lg font-semibold mb-1 truncate">{{ product.name }}</h2>
+
+    <p class="text-indigo-400 font-bold text-xl mb-1">{{ product.price }} <span class="text-sm font-normal text-slate-400">FCFA</span></p>
+
+    {% if product.description %}
+    <p class="text-slate-400 text-sm mb-4 line-clamp-2">{{ product.description }}</p>
+    {% else %}
+    <p class="text-slate-600 text-sm mb-4 italic">Aucune description</p>
+    {% endif %}
+
+    <div class="flex justify-between items-center pt-3 border-t border-slate-800">
+      <a href="/dashboard/products/edit/{{ product.id }}"
+        class="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium transition">
+        ✏️ Modifier
+      </a>
+      <a href="/dashboard/products/delete/{{ product.id }}"
+        onclick="return confirm('Supprimer ce produit ?')"
+        class="flex items-center gap-1 text-red-400 hover:text-red-300 text-sm font-medium transition">
+        🗑 Supprimer
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="text-center py-24">
+  <div class="text-6xl mb-6">📦</div>
+  <h2 class="text-xl font-semibold mb-3">Aucun produit pour le moment</h2>
+  <p class="text-slate-400 mb-8">Ajoutez vos produits pour que votre assistant puisse les présenter aux clients.</p>
+  <a href="/dashboard/products/new"
+    class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl font-medium transition">
+    + Ajouter mon premier produit
+  </a>
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

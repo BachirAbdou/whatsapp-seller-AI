@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaSell — Assistant WhatsApp automatique</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#0a0f1e;color:white;overflow-x:hidden;}
+
+/* NOISE + GLOW */
+body::before{
+content:'';position:fixed;inset:0;
+background:radial-gradient(ellipse 80% 60% at 20% -10%,rgba(99,102,241,0.15) 0%,transparent 60%),
+           radial-gradient(ellipse 60% 40% at 80% 100%,rgba(99,102,241,0.1) 0%,transparent 60%);
+pointer-events:none;z-index:0;
+}
+
+/* NAV */
+nav{
+position:sticky;top:0;z-index:100;
+display:flex;justify-content:space-between;align-items:center;
+padding:18px 80px;
+background:rgba(10,15,30,0.85);
+backdrop-filter:blur(20px);
+border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.logo{font-weight:700;font-size:20px;letter-spacing:-0.3px;}
+.logo span{color:#818cf8;}
+.nav-links{display:flex;align-items:center;gap:8px;}
+.nav-links a{
+text-decoration:none;color:rgba(255,255,255,0.7);
+padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;
+transition:all 0.2s;
+}
+.nav-links a:hover{color:white;background:rgba(255,255,255,0.07);}
+.nav-cta{
+background:#6366f1;color:white !important;
+padding:9px 20px !important;border-radius:9px !important;
+font-weight:600 !important;font-size:14px !important;
+transition:background 0.2s !important;
+}
+.nav-cta:hover{background:#4f46e5 !important;}
+
+/* HERO */
+.hero{
+position:relative;z-index:1;
+padding:100px 80px 80px;
+text-align:center;
+max-width:1100px;margin:0 auto;
+}
+.hero-badge{
+display:inline-flex;align-items:center;gap:8px;
+background:rgba(99,102,241,0.12);
+border:1px solid rgba(99,102,241,0.3);
+border-radius:100px;padding:6px 16px;
+font-size:13px;font-weight:500;color:#a5b4fc;
+margin-bottom:32px;
+}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:#6366f1;}
+.hero h1{
+font-size:68px;font-weight:800;line-height:1.05;
+letter-spacing:-2px;margin-bottom:24px;
+}
+.hero h1 .gradient{
+background:linear-gradient(135deg,#818cf8 0%,#c084fc 100%);
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{
+font-size:19px;color:rgba(255,255,255,0.55);
+max-width:580px;margin:0 auto 40px;line-height:1.7;
+}
+.hero-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{
+background:#6366f1;color:white;
+padding:16px 36px;border-radius:12px;
+font-size:16px;font-weight:600;text-decoration:none;
+transition:all 0.2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{background:#4f46e5;transform:translateY(-1px);}
+.btn-secondary{
+background:rgba(255,255,255,0.06);color:white;
+border:1px solid rgba(255,255,255,0.12);
+padding:16px 36px;border-radius:12px;
+font-size:16px;font-weight:500;text-decoration:none;
+transition:all 0.2s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);}
+
+/* TRUST BAR */
+.trust-bar{
+position:relative;z-index:1;
+display:flex;justify-content:center;gap:40px;flex-wrap:wrap;
+padding:32px 80px;
+border-top:1px solid rgba(255,255,255,0.05);
+border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.trust-item{text-align:center;}
+.trust-item .number{font-size:28px;font-weight:700;color:white;}
+.trust-item .label{font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px;}
+
+/* DEMO */
+.demo-section{
+position:relative;z-index:1;
+padding:100px 80px;
+display:flex;align-items:center;gap:80px;
+max-width:1100px;margin:0 auto;flex-wrap:wrap;
+}
+.demo-text{flex:1;min-width:280px;}
+.demo-text .section-label{
+font-size:13px;font-weight:600;color:#818cf8;letter-spacing:1px;
+text-transform:uppercase;margin-bottom:16px;
+}
+.demo-text h2{font-size:42px;font-weight:700;line-height:1.15;margin-bottom:20px;letter-spacing:-1px;}
+.demo-text p{font-size:16px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:32px;}
+.feature-list{display:flex;flex-direction:column;gap:16px;}
+.feature-item{
+display:flex;align-items:flex-start;gap:12px;
+}
+.feature-icon{
+width:32px;height:32px;border-radius:8px;
+background:rgba(99,102,241,0.15);
+border:1px solid rgba(99,102,241,0.2);
+display:flex;align-items:center;justify-content:center;
+font-size:14px;flex-shrink:0;margin-top:1px;
+}
+.feature-item p{font-size:14px;color:rgba(255,255,255,0.6);margin-top:3px;}
+.feature-item strong{font-size:15px;color:white;font-weight:600;}
+
+/* WHATSAPP MOCKUP */
+.whatsapp-mockup{
+flex-shrink:0;width:300px;
+background:#0b141a;
+border-radius:20px;
+border:1px solid rgba(255,255,255,0.08);
+overflow:hidden;
+box-shadow:0 40px 80px rgba(0,0,0,0.5);
+}
+.wa-header{
+background:#1f2c34;padding:14px 16px;
+display:flex;align-items:center;gap:10px;
+border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.wa-avatar{
+width:34px;height:34px;border-radius:50%;
+background:linear-gradient(135deg,#6366f1,#818cf8);
+display:flex;align-items:center;justify-content:center;
+font-size:12px;font-weight:700;
+}
+.wa-header-text{flex:1;}
+.wa-header-text .name{font-size:14px;font-weight:600;}
+.wa-header-text .status{font-size:11px;color:#4ade80;}
+.wa-body{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:300px;}
+.wa-msg{
+padding:9px 12px;border-radius:10px;
+font-size:13px;line-height:1.5;max-width:85%;
+}
+.wa-msg.client{background:#202c33;align-self:flex-start;}
+.wa-msg.bot{background:#005c4b;align-self:flex-end;}
+.wa-msg .time{font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;text-align:right;}
+.typing{
+align-self:flex-start;background:#202c33;
+border-radius:10px;padding:10px 14px;
+display:flex;gap:4px;align-items:center;
+}
+.typing span{
+width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);
+animation:bounce 1.2s infinite;
+}
+.typing span:nth-child(2){animation-delay:0.2s;}
+.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+/* FEATURES GRID */
+.features-section{
+position:relative;z-index:1;
+padding:80px 80px;
+max-width:1100px;margin:0 auto;
+}
+.section-header{text-align:center;margin-bottom:60px;}
+.section-header .section-label{
+font-size:13px;font-weight:600;color:#818cf8;
+letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;
+}
+.section-header h2{font-size:42px;font-weight:700;letter-spacing:-1px;margin-bottom:16px;}
+.section-header p{font-size:16px;color:rgba(255,255,255,0.5);max-width:480px;margin:0 auto;}
+.features-grid{
+display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+}
+.feature-card{
+background:rgba(255,255,255,0.03);
+border:1px solid rgba(255,255,255,0.07);
+border-radius:16px;padding:28px;
+transition:all 0.3s;
+}
+.feature-card:hover{
+background:rgba(99,102,241,0.06);
+border-color:rgba(99,102,241,0.2);
+transform:translateY(-4px);
+}
+.feature-card .icon{
+width:44px;height:44px;border-radius:10px;
+background:rgba(99,102,241,0.12);
+border:1px solid rgba(99,102,241,0.2);
+display:flex;align-items:center;justify-content:center;
+font-size:20px;margin-bottom:16px;
+}
+.feature-card h3{font-size:17px;font-weight:600;margin-bottom:10px;}
+.feature-card p{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;}
+
+/* PRICING */
+.pricing-section{
+position:relative;z-index:1;
+padding:80px;
+max-width:600px;margin:0 auto;text-align:center;
+}
+.pricing-card{
+background:rgba(255,255,255,0.03);
+border:1px solid rgba(99,102,241,0.3);
+border-radius:24px;padding:48px;
+position:relative;overflow:hidden;
+}
+.pricing-card::before{
+content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+width:60%;height:1px;
+background:linear-gradient(90deg,transparent,rgba(99,102,241,0.5),transparent);
+}
+.popular-badge{
+display:inline-block;
+background:rgba(99,102,241,0.15);
+border:1px solid rgba(99,102,241,0.3);
+color:#a5b4fc;font-size:12px;font-weight:600;
+padding:5px 14px;border-radius:100px;margin-bottom:24px;
+}
+.pricing-card .price{
+font-size:56px;font-weight:800;letter-spacing:-2px;margin-bottom:4px;
+}
+.pricing-card .price span{font-size:20px;font-weight:500;color:rgba(255,255,255,0.5);}
+.pricing-card .period{font-size:14px;color:rgba(255,255,255,0.4);margin-bottom:32px;}
+.pricing-features{
+list-style:none;text-align:left;margin-bottom:36px;
+display:flex;flex-direction:column;gap:12px;
+}
+.pricing-features li{
+display:flex;align-items:center;gap:10px;
+font-size:15px;color:rgba(255,255,255,0.7);
+}
+.pricing-features li::before{
+content:'✓';color:#818cf8;font-weight:700;font-size:14px;
+width:20px;height:20px;background:rgba(99,102,241,0.12);
+border-radius:50%;display:flex;align-items:center;justify-content:center;
+flex-shrink:0;text-align:center;line-height:20px;
+}
+
+/* FAQ */
+.faq-section{
+position:relative;z-index:1;
+padding:80px;max-width:700px;margin:0 auto;
+}
+.faq-item{
+border-bottom:1px solid rgba(255,255,255,0.07);
+padding:24px 0;
+}
+.faq-item h3{font-size:16px;font-weight:600;margin-bottom:10px;}
+.faq-item p{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;}
+
+/* CTA */
+.cta-section{
+position:relative;z-index:1;
+padding:80px;text-align:center;
+}
+.cta-box{
+max-width:700px;margin:0 auto;
+background:rgba(99,102,241,0.08);
+border:1px solid rgba(99,102,241,0.2);
+border-radius:24px;padding:64px;
+position:relative;overflow:hidden;
+}
+.cta-box::before{
+content:'';position:absolute;
+width:400px;height:400px;
+background:radial-gradient(circle,rgba(99,102,241,0.15) 0%,transparent 70%);
+top:50%;left:50%;transform:translate(-50%,-50%);
+pointer-events:none;
+}
+.cta-box h2{font-size:40px;font-weight:700;letter-spacing:-1px;margin-bottom:16px;position:relative;}
+.cta-box p{font-size:16px;color:rgba(255,255,255,0.5);margin-bottom:36px;position:relative;}
+.cta-box .btn-primary{position:relative;}
+
+/* FOOTER */
+footer{
+position:relative;z-index:1;
+text-align:center;padding:40px 80px;
+border-top:1px solid rgba(255,255,255,0.06);
+color:rgba(255,255,255,0.3);font-size:13px;
+}
+
+@media(max-width:768px){
+nav{padding:16px 24px;}
+.hero{padding:60px 24px 60px;}
+.hero h1{font-size:40px;}
+.trust-bar{padding:24px;gap:24px;}
+.demo-section{padding:60px 24px;gap:40px;}
+.features-section{padding:60px 24px;}
+.features-grid{grid-template-columns:1fr;}
+.pricing-section{padding:60px 24px;}
+.faq-section{padding:60px 24px;}
+.cta-section{padding:60px 24px;}
+.cta-box{padding:40px 24px;}
+footer{padding:32px 24px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Nova<span>Sell</span></div>
+  <div class="nav-links">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#pricing">Tarifs</a>
+    <a href="/login">Connexion</a>
+    <a class="nav-cta" href="/register">Essai gratuit</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    7 jours gratuits — sans carte bancaire
+  </div>
+  <h1>Votre assistant WhatsApp<br><span class="gradient">qui vend à votre place</span></h1>
+  <p>Répondez automatiquement à vos clients, confirmez des commandes et gérez votre business 24h/24 — sans effort.</p>
+  <div class="hero-buttons">
+    <a class="btn-primary" href="/register">Commencer gratuitement →</a>
+    <a class="btn-secondary" href="/login">Se connecter</a>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="trust-item">
+    <div class="number">+120</div>
+    <div class="label">Vendeurs actifs</div>
+  </div>
+  <div class="trust-item">
+    <div class="number">+3 200</div>
+    <div class="label">Commandes générées</div>
+  </div>
+  <div class="trust-item">
+    <div class="number">95%</div>
+    <div class="label">Réponses automatiques</div>
+  </div>
+  <div class="trust-item">
+    <div class="number">24h/24</div>
+    <div class="label">Disponibilité</div>
+  </div>
+</div>
+
+<section class="demo-section">
+  <div class="demo-text">
+    <div class="section-label">Comment ça marche</div>
+    <h2>Votre vendeur automatique sur WhatsApp</h2>
+    <p>Le client écrit sur WhatsApp. L'IA comprend, répond intelligemment et transforme les messages en commandes dans votre dashboard — vous n'avez rien à faire.</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">🔗</div>
+        <div>
+          <strong>Connexion en 2 minutes</strong>
+          <p>Scannez un QR code depuis WhatsApp — c'est tout.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🧠</div>
+        <div>
+          <strong>IA intelligente</strong>
+          <p>Comprend les messages, répond naturellement, gère les commandes.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📦</div>
+        <div>
+          <strong>Dashboard complet</strong>
+          <p>Commandes, messages, produits — tout en un endroit.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="whatsapp-mockup">
+    <div class="wa-header">
+      <div class="wa-avatar">NS</div>
+      <div class="wa-header-text">
+        <div class="name">NovaSell Assistant</div>
+        <div class="status">en ligne</div>
+      </div>
+    </div>
+    <div class="wa-body">
+      <div class="wa-msg client">
+        Bonjour, c'est quoi le prix des Air Max ?
+        <div class="time">14:02</div>
+      </div>
+      <div class="wa-msg bot">
+        Nike Air Max 👟<br>
+        Prix : 3 200 FCFA<br>
+        Disponible en stock ✅<br><br>
+        Vous souhaitez commander ?
+        <div class="time">14:02 ✓✓</div>
+      </div>
+      <div class="wa-msg client">
+        Oui je veux
+        <div class="time">14:03</div>
+      </div>
+      <div class="typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section" id="features">
+  <div class="section-header">
+    <div class="section-label">Fonctionnalités</div>
+    <h2>Tout ce dont vous avez besoin</h2>
+    <p>Une plateforme complète pour automatiser vos ventes sur WhatsApp.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon">💬</div>
+      <h3>Réponses automatiques</h3>
+      <p>L'IA répond à vos clients instantanément, de jour comme de nuit, avec un ton naturel et professionnel.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📦</div>
+      <h3>Gestion des commandes</h3>
+      <p>Les commandes sont créées automatiquement après confirmation du client et apparaissent dans votre dashboard.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📊</div>
+      <h3>Dashboard puissant</h3>
+      <p>Suivez vos commandes, messages et produits en temps réel depuis une interface simple et claire.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🎯</div>
+      <h3>Assistant personnalisé</h3>
+      <p>Donnez un nom à votre assistant, configurez son comportement selon votre activité.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📝</div>
+      <h3>Notes contextuelles</h3>
+      <p>Informez votre assistant de votre situation — voyage, promo, indisponibilité — en temps réel.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔒</div>
+      <h3>Sécurisé et fiable</h3>
+      <p>Vos données sont protégées. L'assistant fonctionne même quand vous dormez.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section" id="pricing">
+  <div class="section-header">
+    <div class="section-label">Tarifs</div>
+    <h2>Simple et transparent</h2>
+    <p>Un seul plan, tout inclus.</p>
+  </div>
+  <div class="pricing-card">
+    <div class="popular-badge">⭐ Le plus populaire</div>
+    <div class="price">3 000 <span>FCFA</span></div>
+    <div class="period">par mois · 7 jours gratuits</div>
+    <ul class="pricing-features">
+      <li>1 assistant WhatsApp</li>
+      <li>Réponses automatiques illimitées</li>
+      <li>Gestion des commandes</li>
+      <li>Dashboard complet</li>
+      <li>Notes contextuelles</li>
+      <li>Support WhatsApp</li>
+    </ul>
+    <a class="btn-primary" href="/register" style="display:block;text-align:center;">Commencer gratuitement →</a>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="section-header">
+    <h2>Questions fréquentes</h2>
+  </div>
+  <div class="faq-item">
+    <h3>Est-ce compliqué à installer ?</h3>
+    <p>Non. Il suffit de scanner un QR code depuis WhatsApp. La connexion prend moins de 2 minutes.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Dois-je être en ligne pour que ça fonctionne ?</h3>
+    <p>Non. Le bot répond automatiquement 24h/24, même quand votre téléphone est éteint.</p>
+  </div>
+  <div class="faq-item">
+    <h3>L'IA peut-elle se tromper ?</h3>
+    <p>Rarement. Et vous pouvez intervenir à tout moment depuis le dashboard ou désactiver l'IA en un clic.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Que se passe-t-il après les 7 jours gratuits ?</h3>
+    <p>Vous pouvez renouveler votre abonnement pour 3 000 FCFA/mois via Mynita. Aucune carte bancaire requise.</p>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-box">
+    <h2>Commencez à vendre automatiquement dès aujourd'hui</h2>
+    <p>Rejoignez +120 vendeurs qui automatisent leur WhatsApp avec NovaSell.</p>
+    <a class="btn-primary" href="/register">Créer mon compte gratuitement →</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 NovaSell · Tous droits réservés ·
+  <a href="mailto:novasell10@gmail.com" style="color:rgba(255,255,255,0.4);text-decoration:none;">novasell10@gmail.com</a>
+</footer>
+
+</body>
+</html>

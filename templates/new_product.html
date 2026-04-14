@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+
+<div class="flex items-center gap-4 mb-8">
+  <a href="/dashboard/products"
+    class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+    ←
+  </a>
+  <div>
+    <h1 class="text-3xl font-bold">Ajouter un produit</h1>
+    <p class="text-slate-400 text-sm mt-1">Remplissez les informations de votre produit</p>
+  </div>
+</div>
+
+<div class="card">
+
+  <form method="post" enctype="multipart/form-data" id="productForm" class="space-y-5">
+
+    <!-- NOM -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Nom du produit *</label>
+      <input
+        name="name"
+        placeholder="Ex: Nike Air Max 270"
+        required
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+      />
+    </div>
+
+    <!-- PRIX -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Prix (FCFA) *</label>
+      <div class="relative">
+        <input
+          name="price"
+          type="number"
+          min="0"
+          placeholder="Ex: 3200"
+          required
+          class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 pr-16 text-white text-sm outline-none transition"
+        />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">FCFA</span>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Description <span class="text-slate-600">(optionnel)</span></label>
+      <textarea
+        name="description"
+        placeholder="Ex: Chaussure de sport, disponible en taille 40 à 45, coloris noir et blanc."
+        rows="3"
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition resize-none"
+      ></textarea>
+    </div>
+
+    <!-- IMAGE -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Image du produit *</label>
+
+      <div id="drop-zone"
+        class="border-2 border-dashed border-slate-700 hover:border-indigo-500/50 rounded-xl p-8 text-center cursor-pointer transition"
+        onclick="document.getElementById('imageInput').click()">
+
+        <div id="drop-placeholder">
+          <div class="text-3xl mb-2">🖼️</div>
+          <p class="text-sm text-slate-400">Cliquez pour choisir une image</p>
+          <p class="text-xs text-slate-600 mt-1">PNG, JPG, WEBP — max 5MB</p>
+        </div>
+
+        <div id="drop-preview" class="hidden">
+          <img id="preview-img" class="max-h-40 mx-auto rounded-lg mb-2"/>
+          <p id="preview-name" class="text-xs text-slate-400"></p>
+          <p class="text-xs text-indigo-400 mt-1">Cliquez pour changer</p>
+        </div>
+
+      </div>
+
+      <input
+        id="imageInput"
+        type="file"
+        name="image"
+        accept="image/*"
+        required
+        class="hidden"
+        onchange="previewImage(event)"
+      />
+    </div>
+
+    <!-- BOUTONS -->
+    <div class="flex gap-3 pt-2">
+      <button
+        type="submit"
+        id="submitBtn"
+        class="flex-1 bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
+        <span id="btnText">✅ Créer le produit</span>
+        <div id="spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+      </button>
+      <a href="/dashboard/products"
+        class="px-6 py-3 rounded-xl font-medium text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 transition text-slate-300">
+        Annuler
+      </a>
+    </div>
+
+  </form>
+
+</div>
+
+</div>
+
+<script>
+function previewImage(event){
+  const file = event.target.files[0]
+  if(!file) return
+
+  if(file.size > 5 * 1024 * 1024){
+    alert("Image trop lourde — maximum 5MB")
+    event.target.value = ""
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = function(e){
+    document.getElementById("drop-placeholder").classList.add("hidden")
+    document.getElementById("drop-preview").classList.remove("hidden")
+    document.getElementById("preview-img").src = e.target.result
+    document.getElementById("preview-name").textContent = file.name
+  }
+  reader.readAsDataURL(file)
+}
+
+// drag & drop
+const dropZone = document.getElementById("drop-zone")
+
+dropZone.addEventListener("dragover", e => {
+  e.preventDefault()
+  dropZone.classList.add("border-indigo-500")
+})
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("border-indigo-500")
+})
+
+dropZone.addEventListener("drop", e => {
+  e.preventDefault()
+  dropZone.classList.remove("border-indigo-500")
+  const file = e.dataTransfer.files[0]
+  if(file && file.type.startsWith("image/")){
+    const input = document.getElementById("imageInput")
+    const dt = new DataTransfer()
+    dt.items.add(file)
+    input.files = dt.files
+    previewImage({target: input})
+  }
+})
+
+// spinner au submit
+document.getElementById("productForm").addEventListener("submit", function(e){
+  const name = this.querySelector('[name="name"]').value.trim()
+  const price = this.querySelector('[name="price"]').value.trim()
+  const image = document.getElementById("imageInput").files[0]
+
+  if(!name){
+    e.preventDefault()
+    alert("Veuillez saisir le nom du produit")
+    return
+  }
+  if(!price || isNaN(price) || Number(price) <= 0){
+    e.preventDefault()
+    alert("Veuillez saisir un prix valide")
+    return
+  }
+  if(!image){
+    e.preventDefault()
+    alert("Veuillez choisir une image")
+    return
+  }
+
+  const btn = document.getElementById("submitBtn")
+  const text = document.getElementById("btnText")
+  const spinner = document.getElementById("spinner")
+  btn.disabled = true
+  btn.classList.add("opacity-70", "cursor-not-allowed")
+  text.textContent = "Création en cours..."
+  spinner.classList.remove("hidden")
+})
+</script>
+
+{% endblock %}

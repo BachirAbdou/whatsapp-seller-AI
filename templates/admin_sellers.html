@@ -1,0 +1,253 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+<h1 class="text-3xl font-bold mb-8">
+Vendeurs
+</h1>
+
+<form method="get" class="mb-6">
+
+<input
+name="search"
+value="{{ search }}"
+placeholder="Rechercher vendeur..."
+class="w-full p-3 rounded bg-slate-800 border border-slate-700">
+
+</form>
+
+<div class="card overflow-x-auto">
+
+<table class="w-full text-left">
+
+<thead>
+
+<tr class="border-b border-slate-700 text-slate-400">
+<th>ID</th>
+<th>Nom</th>
+<th>Email</th>
+<th>Produits</th>
+<th>Bot</th>
+<th>IA</th>
+<th>Abonnement</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% if sellers|length == 0 %}
+
+<tr>
+<td colspan="8" class="text-center py-10 text-slate-400">
+Aucun vendeur trouvé
+</td>
+</tr>
+
+{% endif %}
+
+{% for s in sellers %}
+
+<tr class="border-b border-slate-800 hover:bg-slate-800/40">
+
+<td class="py-3">{{ s.id }}</td>
+
+<td>{{ s.name }}</td>
+
+<td>
+{{ s.email }}
+<br>
+
+{% if s.is_approved %}
+<span class="text-green-400 text-xs">✔ Validé</span>
+{% else %}
+<span class="text-yellow-400 text-xs">⏳ En attente</span>
+{% endif %}
+
+</td>
+
+<td>{{ s.products|length }}</td>
+
+<td>
+{% if s.bot_status == "connected" %}
+<span class="text-green-400">Connecté</span>
+{% else %}
+<span class="text-red-400">Offline</span>
+{% endif %}
+</td>
+
+<td>
+{% if s.ai_enabled %}
+<span class="text-green-400">Active</span>
+{% else %}
+<span class="text-red-400">Off</span>
+{% endif %}
+</td>
+
+<!-- ✅ ABONNEMENT -->
+
+<td>
+
+{% if s.payment_status == "pending" %}
+<span class="text-yellow-400">
+Paiement déclaré ({{ s.mynita_name }})
+</span>
+<br>
+<span class="text-xs text-slate-500">
+En attente de validation
+</span>
+
+{% elif s.admin_approved %}
+<span class="text-green-400">
+Actif
+</span>
+
+{% else %}
+<span class="text-red-400">
+Non abonné
+</span>
+
+{% endif %}
+
+</td>
+
+<!-- ✅ ACTIONS -->
+
+<td class="flex gap-2 items-center">
+
+<a href="/admin/seller/{{ s.id }}"
+class="text-indigo-400 hover:text-indigo-300">
+Voir
+</a>
+
+{% if s.payment_status == "pending" %}
+
+<form action="/admin/confirm_payment/{{ s.id }}" method="post">
+<button class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+Valider paiement
+</button>
+</form>
+
+{% elif s.admin_approved %}
+
+<form action="/admin/deactivate_seller/{{ s.id }}" method="post">
+<button class="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm">
+Désactiver abonnement
+</button>
+</form>
+
+{% elif s.payment_status == "approved" %}
+
+<form action="/admin/confirm_payment/{{ s.id }}" method="post">
+<button class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+Activer abonnement
+</button>
+</form>
+
+{% else %}
+
+<span class="text-slate-500 text-sm">
+Aucune action
+</span>
+
+{% endif %}
+
+{% if not s.is_approved and s.role not in ["admin", "superadmin"] %}
+<form action="/admin/approve/{{ s.id }}" method="post"
+onsubmit="return confirm('Valider ce vendeur ?')">
+    <button class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded text-sm">
+        Activer compte
+    </button>
+</form>
+{% endif %}
+
+{% if s.is_approved and s.role not in ["admin", "superadmin"] %}
+<form action="/admin/deactivate/{{ s.id }}" method="post"
+      onsubmit="return confirm('Désactiver ce vendeur ?')">
+    <button class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+        Désactiver compte
+    </button>
+</form>
+{% endif %}
+
+<button 
+type="button"
+onclick="openDeleteDialog('{{ s.id }}')"
+class="bg-red-700 hover:bg-red-800 px-3 py-1 rounded text-sm">
+Supprimer
+</button>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<div id="deleteModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+    <div class="bg-slate-900 p-6 rounded-xl w-full max-w-md">
+
+        <h2 class="text-xl font-bold mb-4 text-white">
+            Supprimer le vendeur ?
+        </h2>
+
+        <p class="text-slate-400 mb-6">
+            Choisissez le type de suppression :
+        </p>
+
+        <div class="flex flex-col gap-3">
+
+            <!-- Soft delete -->
+            <form id="softDeleteForm" method="post">
+                <button class="w-full bg-yellow-600 hover:bg-yellow-700 py-2 rounded">
+                    Supprimer de la plateforme
+                </button>
+            </form>
+
+            <!-- Hard delete -->
+            <form id="hardDeleteForm" method="post">
+                <button class="w-full bg-red-700 hover:bg-red-800 py-2 rounded">
+                    Supprimer définitivement
+                </button>
+            </form>
+
+            <button 
+            onclick="closeDeleteDialog()"
+            class="text-slate-400 mt-2">
+                Annuler
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+function openDeleteDialog(sellerId){
+
+    const modal = document.getElementById("deleteModal")
+
+    document.getElementById("softDeleteForm").action = `/admin/delete_seller/${sellerId}`
+    document.getElementById("hardDeleteForm").action = `/admin/delete_seller_permanent/${sellerId}`
+
+    modal.classList.remove("hidden")
+}
+
+function closeDeleteDialog(){
+    document.getElementById("deleteModal").classList.add("hidden")
+}
+</script>
+
+{% endblock %}

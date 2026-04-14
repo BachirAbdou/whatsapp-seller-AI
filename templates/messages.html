@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto h-full">
+
+<div class="mb-6">
+  <h1 class="text-3xl font-bold">Messages</h1>
+  <p class="text-slate-400 text-sm mt-1">Conversations avec vos clients</p>
+</div>
+
+<div class="grid grid-cols-4 border border-slate-700 rounded-2xl overflow-hidden" style="height: 75vh;">
+
+  <!-- CONVERSATIONS -->
+  <div class="col-span-1 border-r border-slate-700 overflow-y-auto bg-slate-900/50 flex flex-col">
+
+    <div class="p-4 font-semibold text-sm border-b border-slate-700 text-slate-300 shrink-0">
+      💬 Conversations
+      <span class="text-slate-500 font-normal">({{ clients_data|length }})</span>
+    </div>
+
+    {% if clients_data %}
+      {% for c in clients_data %}
+        {% set phone = c.numero.split('@')[0] %}
+        <a href="/dashboard/messages?client={{ c.numero }}"
+          class="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition border-b border-slate-800/50
+          {% if selected_client == c.numero %}bg-slate-800 border-l-2 border-l-indigo-500{% endif %}">
+
+          <!-- AVATAR -->
+          <div class="relative shrink-0">
+            <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400">
+              {{ phone[-2:] }}
+            </div>
+            {% if c.unread > 0 and selected_client != c.numero %}
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center" style="font-size:9px;">
+              {{ c.unread if c.unread < 10 else "9+" }}
+            </span>
+            {% endif %}
+          </div>
+
+          <!-- INFOS -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between mb-0.5">
+              <p class="text-sm font-semibold truncate">+{{ phone }}</p>
+              {% if c.last_date %}
+              <p class="text-xs text-slate-500 shrink-0 ml-2">
+                {{ c.last_date.strftime('%d/%m') }}
+              </p>
+              {% endif %}
+            </div>
+            <p class="text-xs text-slate-500 truncate">
+              {% if c.last_message.startswith("BOT:") %}
+                🤖 {{ c.last_message.replace("BOT:", "")[:40] }}...
+              {% elif "CONFIRMATION_PENDING" in c.last_message %}
+                🤖 Confirmation en attente...
+              {% else %}
+                {{ c.last_message[:40] }}{% if c.last_message|length > 40 %}...{% endif %}
+              {% endif %}
+            </p>
+          </div>
+
+        </a>
+      {% endfor %}
+    {% else %}
+      <div class="flex-1 flex items-center justify-center text-slate-600 text-sm p-4 text-center">
+        Aucune conversation
+      </div>
+    {% endif %}
+
+  </div>
+
+  <!-- CHAT -->
+  <div class="col-span-3 flex flex-col h-full min-h-0 bg-slate-900/30">
+
+    <!-- HEADER CHAT -->
+    <div class="p-4 border-b border-slate-700 shrink-0 flex items-center gap-3">
+      {% if selected_client %}
+        {% set phone = selected_client.split('@')[0] %}
+        <div class="w-9 h-9 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400">
+          {{ phone[-2:] }}
+        </div>
+        <div>
+          <p class="text-sm font-semibold">+{{ phone }}</p>
+          <p class="text-xs text-slate-500">
+            {{ messages|length }} message{% if messages|length > 1 %}s{% endif %}
+          </p>
+        </div>
+      {% else %}
+        <p class="text-slate-400 font-normal text-sm">Sélectionnez une conversation</p>
+      {% endif %}
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-3 min-h-0">
+
+      {% if messages %}
+        {% for msg in messages %}
+
+          {% if msg.message.startswith("BOT:") or "CONFIRMATION_PENDING" in msg.message %}
+          <div class="flex justify-end">
+            <div>
+              <div class="bg-indigo-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-sm break-words text-sm leading-relaxed">
+                {{ msg.message.replace("BOT:", "").replace("CONFIRMATION_PENDING:", "") }}
+              </div>
+              {% if msg.created_at %}
+              <p class="text-xs text-slate-600 text-right mt-1">
+                {{ msg.created_at.strftime('%H:%M') }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div class="flex justify-start">
+            <div>
+              <div class="bg-slate-800 border border-slate-700 px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-sm break-words text-sm leading-relaxed">
+                {{ msg.message }}
+              </div>
+              {% if msg.created_at %}
+              <p class="text-xs text-slate-600 mt-1">
+                {{ msg.created_at.strftime('%H:%M') }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+        {% endfor %}
+      {% else %}
+        {% if selected_client %}
+        <div class="flex items-center justify-center h-full text-slate-600 text-sm">
+          Aucun message dans cette conversation
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
+          <div class="text-5xl">💬</div>
+          <p class="text-sm">Choisissez une conversation à gauche</p>
+        </div>
+        {% endif %}
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script>
+const chat = document.getElementById("chat")
+if(chat){ chat.scrollTop = chat.scrollHeight }
+
+setInterval(() => {
+  const url = window.location.href
+  fetch(url)
+    .then(res => res.text())
+    .then(html => {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, "text/html")
+      const newChat = doc.getElementById("chat")
+      if(newChat){
+        const isNearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 100
+        chat.innerHTML = newChat.innerHTML
+        if(isNearBottom){ chat.scrollTop = chat.scrollHeight }
+      }
+    })
+}, 5000)
+</script>
+
+{% endblock %}

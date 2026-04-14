@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>NovaSell</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Inter',sans-serif;}
+body{background:#0a0f1e;color:white;}
+
+.sidebar{
+background:#050a14;
+border-right:1px solid rgba(255,255,255,0.06);
+}
+
+.nav-link{
+display:flex;
+align-items:center;
+gap:12px;
+padding:10px 12px;
+border-radius:10px;
+color:#94a3b8;
+transition:all 0.2s;
+text-decoration:none;
+font-size:14px;
+font-weight:500;
+}
+.nav-link:hover{
+background:rgba(255,255,255,0.06);
+color:white;
+}
+.nav-link.active{
+background:rgba(99,102,241,0.12);
+color:#a5b4fc;
+border:1px solid rgba(99,102,241,0.2);
+}
+
+.card{
+background:rgba(255,255,255,0.03);
+border-radius:16px;
+padding:24px;
+border:1px solid rgba(255,255,255,0.07);
+}
+
+/* Loader spinner */
+.loader{
+width:32px;height:32px;
+border:3px solid rgba(99,102,241,0.2);
+border-top-color:#6366f1;
+border-radius:50%;
+animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="flex h-screen">
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar w-64 transition-all duration-300 flex flex-col justify-between shrink-0">
+
+  <div>
+
+    <!-- LOGO -->
+    <div class="flex items-center justify-between p-5 border-b border-white/5">
+      <a href="/dashboard" class="logo-text font-bold text-lg text-white" style="text-decoration:none;">
+        Nova<span style="color:#818cf8;">Sell</span>
+      </a>
+      <button onclick="toggleSidebar()"
+        class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition text-sm">
+        ☰
+      </button>
+    </div>
+
+    <!-- MENU -->
+    <nav class="p-3 space-y-1 mt-2">
+
+      <a href="/dashboard" class="nav-link">
+        <span style="font-size:16px;">📊</span>
+        <span class="link-text">Dashboard</span>
+      </a>
+
+      <a href="/dashboard/stats" class="nav-link">
+        <span style="font-size:16px;">📈</span>
+        <span class="link-text">Statistiques</span>
+      </a>
+
+      <a href="/dashboard/products" class="nav-link">
+        <span style="font-size:16px;">🏷️</span>
+        <span class="link-text">Produits</span>
+      </a>
+
+      <a href="/dashboard/orders" class="nav-link relative">
+        <span style="font-size:16px;">📦</span>
+        <span class="link-text">Commandes</span>
+        <span id="badge-orders" class="hidden ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+      </a>
+
+      <a href="/dashboard/messages" class="nav-link relative">
+        <span style="font-size:16px;">💬</span>
+        <span class="link-text">Messages</span>
+        <span id="badge-messages" class="hidden ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">0</span>
+      </a>
+
+      <a href="/dashboard/subscriptions" class="nav-link">
+        <span style="font-size:16px;">🧾</span>
+        <span class="link-text">Abonnements</span>
+      </a>
+
+      <a href="/dashboard/settings" class="nav-link">
+        <span style="font-size:16px;">⚙️</span>
+        <span class="link-text">Paramètres</span>
+      </a>
+
+    </nav>
+  </div>
+
+  <!-- LOGOUT -->
+  <div class="p-3 border-t border-white/5">
+    <a href="/logout"
+      onclick="return confirm('Voulez-vous vraiment vous déconnecter ?')"
+      class="nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
+      <span style="font-size:16px;">🚪</span>
+      <span class="link-text">Déconnexion</span>
+    </a>
+  </div>
+
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 overflow-y-auto">
+  <div class="p-8">
+    {% block content %}
+    {% endblock %}
+  </div>
+</div>
+
+</div>
+
+<script>
+const sidebar = document.getElementById("sidebar")
+const texts = document.querySelectorAll(".link-text")
+const logo = document.querySelector(".logo-text")
+
+function toggleSidebar(){
+  if(sidebar.classList.contains("w-64")){
+    sidebar.classList.remove("w-64")
+    sidebar.classList.add("w-16")
+    texts.forEach(t => t.style.display="none")
+    if(logo) logo.style.display="none"
+  }else{
+    sidebar.classList.remove("w-16")
+    sidebar.classList.add("w-64")
+    texts.forEach(t => t.style.display="inline")
+    if(logo) logo.style.display="inline"
+  }
+}
+
+// Active link highlight
+const currentPath = window.location.pathname
+document.querySelectorAll(".nav-link").forEach(link => {
+  if(link.getAttribute("href") === currentPath){
+    link.classList.add("active")
+  }
+})
+</script>
+
+<script>
+async function loadBadges(){
+  try{
+    const res = await fetch("/api/notifications")
+    const data = await res.json()
+    const bo = document.getElementById("badge-orders")
+    const bm = document.getElementById("badge-messages")
+    if(data.orders > 0){ bo.textContent = data.orders; bo.classList.remove("hidden") }
+    else{ bo.classList.add("hidden") }
+    if(data.messages > 0){ bm.textContent = data.messages; bm.classList.remove("hidden") }
+    else{ bm.classList.add("hidden") }
+  }catch(e){}
+}
+loadBadges()
+setInterval(loadBadges, 10000)
+</script>
+
+</body>
+</html>

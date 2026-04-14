@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto">
+
+<div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-bold">Historique des abonnements</h1>
+    <a href="/dashboard/settings" class="text-slate-400 hover:text-white text-sm">
+        ← Retour aux paramètres
+    </a>
+</div>
+
+{% if subscriptions %}
+
+<div class="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+
+    <table class="w-full text-sm">
+
+        <thead>
+            <tr class="border-b border-slate-700 text-slate-400">
+                <th class="text-left p-4">Plan</th>
+                <th class="text-left p-4">Début</th>
+                <th class="text-left p-4">Expiration</th>
+                <th class="text-left p-4">Statut</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for sub in subscriptions %}
+        <tr class="border-b border-slate-800 hover:bg-slate-800/50">
+
+            <td class="p-4 font-medium text-white">
+                {{ sub.plan or "monthly" }}
+            </td>
+
+            <td class="p-4 text-slate-300">
+                {% if sub.start_date %}
+                    {{ sub.start_date.strftime('%d %B %Y') }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+
+            <td class="p-4 text-slate-300">
+                {% if sub.end_date %}
+                    {{ sub.end_date.strftime('%d %B %Y') }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+
+            <td class="p-4">
+                {% if sub.status == "active" and sub.end_date and sub.end_date > now %}
+                    <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                        ✅ Actif
+                    </span>
+                {% elif sub.status == "pending" %}
+                    <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-medium">
+                        ⏳ En attente
+                    </span>
+                {% else %}
+                    <span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-medium">
+                        ❌ Expiré
+                    </span>
+                {% endif %}
+            </td>
+
+        </tr>
+        {% endfor %}
+        </tbody>
+
+    </table>
+
+</div>
+
+{% else %}
+
+<div class="bg-slate-900 p-8 rounded-xl border border-slate-700 text-center">
+    <p class="text-slate-400">Aucun abonnement trouvé.</p>
+    <a href="/pricing" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded inline-block mt-4">
+        S'abonner
+    </a>
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-2xl mx-auto">
+
+<div class="mb-10">
+  <h1 class="text-3xl font-bold">Paramètres</h1>
+  <p class="text-slate-400 text-sm mt-1">Gérez votre profil et vos préférences</p>
+</div>
+
+<!-- PROFIL -->
+<div class="card mb-6">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-lg">👤</div>
+    <div>
+      <h2 class="text-base font-semibold">Mon profil</h2>
+      <p class="text-slate-400 text-xs">Nom de la boutique et de l'assistant</p>
+    </div>
+  </div>
+
+  {% if success %}
+  <div class="bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-xl mb-5 text-sm">
+    ✅ Modifications enregistrées
+  </div>
+  {% endif %}
+
+  {% if error == "email" %}
+  <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl mb-5 text-sm">
+    ❌ Email déjà utilisé
+  </div>
+  {% endif %}
+
+  <form action="/settings/update" method="post" class="space-y-4">
+
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Nom de la boutique</label>
+      <input type="text" name="name" value="{{ seller.name }}" required
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-white text-sm outline-none transition"/>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Nom de l'assistant WhatsApp</label>
+      <input type="text" name="assistant_name" value="{{ seller.assistant_name }}" required
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-white text-sm outline-none transition"/>
+      <p class="text-xs text-slate-500 mt-1.5">C'est le nom que verront vos clients sur WhatsApp</p>
+    </div>
+
+    <div class="pt-2">
+      <button class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl text-sm font-medium transition">
+        💾 Mettre à jour
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<!-- NOTE CONTEXTUELLE -->
+<div class="card mb-6">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-lg">📝</div>
+    <div>
+      <h2 class="text-base font-semibold">Note contextuelle</h2>
+      <p class="text-slate-400 text-xs">Informez votre assistant d'une situation particulière</p>
+    </div>
+  </div>
+
+  {% if seller.context_note %}
+  <div class="bg-amber-500/8 border border-amber-500/20 rounded-xl p-3 mb-4 text-sm text-amber-300 flex items-start gap-2">
+    <span>⚡</span>
+    <span>Note active — votre assistant en tient compte dans ses réponses</span>
+  </div>
+  {% endif %}
+
+  <form method="post" action="/dashboard/context_note">
+    <textarea name="note" rows="3" required
+      placeholder="Ex: Je suis en voyage jusqu'au 20, les livraisons reprennent après. / Promo -20% sur tout ce weekend."
+      class="w-full p-3.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 text-white text-sm outline-none transition mb-3 resize-none"
+    >{{ seller.context_note or "" }}</textarea>
+    <div class="flex gap-3">
+      <button class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-medium transition">
+        💾 Sauvegarder
+      </button>
+      {% if seller.context_note %}
+      <button formaction="/dashboard/context_note/clear"
+        class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition">
+        🗑 Effacer
+      </button>
+      {% endif %}
+    </div>
+  </form>
+
+</div>
+
+<!-- FACTURATION -->
+<div class="card mb-6">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-green-500/15 border border-green-500/25 flex items-center justify-center text-lg">💳</div>
+    <div>
+      <h2 class="text-base font-semibold">Facturation</h2>
+      <p class="text-slate-400 text-xs">Statut de votre abonnement</p>
+    </div>
+  </div>
+
+  {% if subscription and subscription.end_date > now %}
+
+  <div class="bg-green-500/8 border border-green-500/20 rounded-xl p-4 mb-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-green-400 font-semibold text-sm">✅ Abonnement actif</p>
+        <p class="text-slate-400 text-xs mt-1">Plan {{ subscription.plan }} · Expire le {{ subscription.end_date.strftime('%d %B %Y') }}</p>
+      </div>
+      <span class="bg-green-500/15 border border-green-500/20 text-green-400 text-xs px-3 py-1 rounded-full font-medium">Actif</span>
+    </div>
+  </div>
+
+  <div class="flex gap-3">
+    <a href="/dashboard/subscriptions"
+      class="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition">
+      📋 Historique →
+    </a>
+    <span class="bg-slate-800 text-slate-500 px-4 py-1.5 rounded-xl text-sm cursor-not-allowed">
+      Renouveler (actif)
+    </span>
+  </div>
+
+  {% else %}
+
+  <div class="bg-red-500/8 border border-red-500/20 rounded-xl p-4 mb-4">
+    <p class="text-red-400 font-semibold text-sm">❌ Aucun abonnement actif</p>
+    <p class="text-slate-400 text-xs mt-1">Renouvelez pour continuer à utiliser votre assistant WhatsApp</p>
+  </div>
+
+  <a href="/pricing" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl text-sm font-medium transition inline-block">
+    S'abonner — 3 000 FCFA/mois
+  </a>
+
+  {% endif %}
+
+</div>
+
+<!-- SUPPORT -->
+<div class="card">
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-lg">🎧</div>
+    <div>
+      <h2 class="text-base font-semibold">Support & Contact</h2>
+      <p class="text-slate-400 text-xs">Notre équipe est là pour vous aider</p>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+
+    <div class="flex items-center justify-between bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl">
+      <div>
+        <p class="text-sm font-medium">📧 Email</p>
+        <p class="text-slate-400 text-xs mt-0.5">novasell10@gmail.com</p>
+      </div>
+      <a href="mailto:novasell10@gmail.com"
+        class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-xs font-medium transition">
+        Contacter
+      </a>
+    </div>
+
+    <div class="flex items-center justify-between bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl">
+      <div>
+        <p class="text-sm font-medium">📱 WhatsApp</p>
+        <p class="text-slate-400 text-xs mt-0.5">+227 86 81 02 08</p>
+      </div>
+      <a href="https://wa.me/22786810208" target="_blank"
+        class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-xs font-medium transition">
+        Écrire
+      </a>
+    </div>
+
+  </div>
+
+  <p class="text-slate-600 text-xs mt-5">⏱ Temps de réponse moyen : quelques minutes à quelques heures</p>
+
+</div>
+
+</div>
+
+{% endblock %}

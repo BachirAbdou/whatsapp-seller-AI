@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+<!-- HEADER -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+
+  <div>
+    <h1 class="text-3xl font-bold">Bienvenue, {{ seller.name }} 👋</h1>
+    <p class="text-slate-400 mt-1 text-sm">Voici un aperçu de votre activité</p>
+  </div>
+
+  <div class="flex flex-wrap items-center gap-3">
+
+    <!-- STATUT ABONNEMENT -->
+    {% if subscription %}
+    <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm">
+      <span class="text-slate-400">Abonnement :</span>
+      <span class="text-white font-medium ml-1">{{ days_left }}j {{ hours_left }}h restants</span>
+    </div>
+    {% else %}
+    <a href="/pricing"
+      class="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-2 text-sm hover:bg-red-500/20 transition">
+      ⚠️ Renouveler l'abonnement
+    </a>
+    {% endif %}
+
+    <!-- TOGGLE IA -->
+    <form method="post" action="/dashboard/ia_toggle">
+      <input type="hidden" name="activate" value="{% if seller.ai_enabled %}false{% else %}true{% endif %}">
+      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition
+        {% if seller.ai_enabled %}
+        bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500/20
+        {% else %}
+        bg-slate-800 border border-slate-700 text-slate-400 hover:bg-slate-700
+        {% endif %}">
+        <span class="w-2 h-2 rounded-full {% if seller.ai_enabled %}bg-green-400{% else %}bg-slate-500{% endif %}"></span>
+        {% if seller.ai_enabled %}IA active{% else %}IA désactivée{% endif %}
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<!-- ALERTES -->
+{% if request.query_params.get("payment") == "waiting" %}
+<div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 p-4 rounded-xl mb-6 text-sm">
+  ✅ Demande de paiement envoyée. Votre abonnement sera confirmé après vérification.
+</div>
+{% endif %}
+
+{% if seller.payment_status == "pending" %}
+<div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 p-4 rounded-xl mb-6 text-sm">
+  ⏳ Paiement en cours de validation — <span class="font-medium">{{ seller.mynita_name }}</span>
+</div>
+{% endif %}
+
+<!-- STATS -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+
+  <div class="card group hover:border-indigo-500/30 transition-all">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-slate-400 text-sm font-medium">Commandes</p>
+      <div class="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-lg">📦</div>
+    </div>
+    <p class="text-4xl font-bold">{{ orders }}</p>
+    <a href="/dashboard/orders" class="text-xs text-indigo-400 mt-3 inline-block hover:underline">Voir toutes →</a>
+  </div>
+
+  <div class="card group hover:border-purple-500/30 transition-all">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-slate-400 text-sm font-medium">Produits</p>
+      <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-lg">🏷️</div>
+    </div>
+    <p class="text-4xl font-bold">{{ products }}</p>
+    <a href="/dashboard/products" class="text-xs text-purple-400 mt-3 inline-block hover:underline">Gérer →</a>
+  </div>
+
+  <div class="card group hover:border-green-500/30 transition-all">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-slate-400 text-sm font-medium">Messages reçus</p>
+      <div class="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-lg">💬</div>
+    </div>
+    <p class="text-4xl font-bold">{{ messages }}</p>
+    <a href="/dashboard/messages" class="text-xs text-green-400 mt-3 inline-block hover:underline">Voir →</a>
+  </div>
+
+</div>
+
+<!-- WHATSAPP + QR -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+  <!-- STATUT WHATSAPP -->
+  <div class="card">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold">Connexion WhatsApp</h2>
+      <div id="whatsapp-status-badge"
+        class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-400">
+        Chargement...
+      </div>
+    </div>
+
+    <div id="whatsapp-status" class="text-sm text-slate-400 mb-6">
+      Vérification du statut...
+    </div>
+
+    <button
+      id="connect_btn"
+      onclick="connectWhatsapp()"
+      class="bg-green-600 hover:bg-green-700 px-5 py-2.5 rounded-lg font-medium text-sm transition">
+      Connecter mon WhatsApp
+    </button>
+
+    <p class="text-slate-500 mt-4 text-xs leading-relaxed">
+      WhatsApp → Appareils connectés → Connecter un appareil → Scanner le QR
+    </p>
+  </div>
+
+  <!-- QR CODE -->
+  <div class="card flex flex-col items-center justify-center min-h-[200px]">
+
+    <div id="qr_loader" class="hidden flex-col items-center gap-3 text-center">
+      <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-sm text-slate-400">Génération du QR code...</p>
+    </div>
+
+    <img id="qr_img" class="w-56 h-56 hidden rounded-xl border border-slate-700"/>
+
+    <div id="qr_placeholder" class="flex flex-col items-center gap-3 text-slate-600">
+      <div class="w-16 h-16 rounded-2xl border-2 border-dashed border-slate-700 flex items-center justify-center text-2xl">📱</div>
+      <p class="text-sm">Le QR code apparaîtra ici</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ACTIONS RAPIDES -->
+<div class="card">
+  <h2 class="text-lg font-semibold mb-5">Actions rapides</h2>
+  <div class="flex flex-wrap gap-3">
+
+    <a href="/dashboard/products"
+      class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-lg font-medium text-sm transition">
+      🏷️ Gérer les produits
+    </a>
+
+    <a href="/dashboard/orders"
+      class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-5 py-2.5 rounded-lg font-medium text-sm transition">
+      📦 Voir les commandes
+    </a>
+
+    <a href="/dashboard/messages"
+      class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-5 py-2.5 rounded-lg font-medium text-sm transition">
+      💬 Messages clients
+    </a>
+
+    <a href="/dashboard/settings"
+      class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-5 py-2.5 rounded-lg font-medium text-sm transition">
+      ⚙️ Paramètres
+    </a>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+async function checkWhatsAppStatus(){
+  const res = await fetch("/dashboard/whatsapp_status")
+  const data = await res.json()
+
+  const statusDiv = document.getElementById("whatsapp-status")
+  const badge = document.getElementById("whatsapp-status-badge")
+  const img = document.getElementById("qr_img")
+  const placeholder = document.getElementById("qr_placeholder")
+
+  if(data.status == "connected"){
+    if(qrInterval){ clearInterval(qrInterval); qrInterval = null }
+    statusDiv.innerHTML = '<span class="text-green-400">✅ Votre WhatsApp est connecté et actif.</span>'
+    badge.className = "text-xs px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400"
+    badge.textContent = "Connecté"
+    setButtonState(false)
+    setButtonText("Connecté ✅")
+    if(img) img.classList.add("hidden")
+    if(placeholder) placeholder.classList.remove("hidden")
+  }
+  else if(data.status == "connecting"){
+    statusDiv.innerHTML = '<span class="text-yellow-400">⏳ Connexion en cours, génération du QR...</span>'
+    badge.className = "text-xs px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400"
+    badge.textContent = "Connexion..."
+    setButtonState(false)
+    setButtonText("Génération...")
+  }
+  else if(data.status == "qr_waiting"){
+    if(!qrInterval){ qrInterval = setInterval(loadQR, 2000) }
+    statusDiv.innerHTML = '<span class="text-blue-400">📱 Scannez le QR code avec votre WhatsApp.</span>'
+    badge.className = "text-xs px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400"
+    badge.textContent = "QR prêt"
+    setButtonState(false)
+    setButtonText("Scanner le QR")
+  }
+  else if(data.status == "qr_expired"){
+    statusDiv.innerHTML = '<span class="text-orange-400">⏰ QR expiré — cliquez pour en générer un nouveau.</span>'
+    badge.className = "text-xs px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400"
+    badge.textContent = "QR expiré"
+    if(img) img.classList.add("hidden")
+    if(placeholder) placeholder.classList.remove("hidden")
+    setButtonState(true)
+    setButtonText("Recharger le QR")
+  }
+  else{
+    statusDiv.innerHTML = '<span class="text-red-400">🔴 WhatsApp déconnecté. Cliquez pour reconnecter.</span>'
+    badge.className = "text-xs px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400"
+    badge.textContent = "Déconnecté"
+    setButtonState(true)
+    setButtonText("Connecter mon WhatsApp")
+  }
+}
+
+setInterval(checkWhatsAppStatus, 3000)
+checkWhatsAppStatus()
+</script>
+
+<script>
+let qrInterval = null
+
+async function connectWhatsapp(){
+  const img = document.getElementById("qr_img")
+  const placeholder = document.getElementById("qr_placeholder")
+  if(img) img.classList.add("hidden")
+  if(placeholder) placeholder.classList.add("hidden")
+  document.getElementById("qr_loader").classList.remove("hidden")
+  setButtonState(false)
+  setButtonText("Connexion en cours...")
+  await fetch("/dashboard/connect_whatsapp", { method: "POST" })
+  if(!qrInterval){ qrInterval = setInterval(loadQR, 2000) }
+}
+
+let currentQRUrl = null
+
+async function loadQR(){
+  const img = document.getElementById("qr_img")
+  const placeholder = document.getElementById("qr_placeholder")
+  if(!img) return
+  try{
+    const res = await fetch("/dashboard/connect_whatsapp_qr?t=" + new Date().getTime())
+    if(res.status === 204) return
+    const blob = await res.blob()
+    if(currentQRUrl) URL.revokeObjectURL(currentQRUrl)
+    currentQRUrl = URL.createObjectURL(blob)
+    img.src = currentQRUrl
+    document.getElementById("qr_loader").classList.add("hidden")
+    if(placeholder) placeholder.classList.add("hidden")
+    img.classList.remove("hidden")
+  }catch(e){ console.log("QR load error") }
+}
+
+function setButtonState(enabled){
+  const btn = document.getElementById("connect_btn")
+  if(enabled){
+    btn.disabled = false
+    btn.classList.remove("bg-gray-600","cursor-not-allowed","opacity-60")
+    btn.classList.add("bg-green-600","hover:bg-green-700")
+  }else{
+    btn.disabled = true
+    btn.classList.remove("bg-green-600","hover:bg-green-700")
+    btn.classList.add("bg-gray-600","cursor-not-allowed","opacity-60")
+  }
+}
+
+function setButtonText(text){
+  document.getElementById("connect_btn").innerText = text
+}
+</script>
+
+{% endblock %}

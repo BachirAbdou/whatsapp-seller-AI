@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+<div class="mb-8">
+  <h1 class="text-3xl font-bold">Statistiques</h1>
+  <p class="text-slate-400 text-sm mt-1">Vue d'ensemble de votre activité</p>
+</div>
+
+<!-- STATS PRINCIPALES -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+
+  <div class="card hover:border-indigo-500/30 transition">
+    <p class="text-slate-400 text-xs font-medium mb-3">Commandes aujourd'hui</p>
+    <p class="text-3xl font-bold text-indigo-400">{{ orders_today }}</p>
+    <p class="text-xs text-slate-500 mt-2">{{ orders_week }} cette semaine</p>
+  </div>
+
+  <div class="card hover:border-green-500/30 transition">
+    <p class="text-slate-400 text-xs font-medium mb-3">Total commandes</p>
+    <p class="text-3xl font-bold text-green-400">{{ total_orders }}</p>
+    <p class="text-xs text-slate-500 mt-2">{{ orders_month }} ce mois</p>
+  </div>
+
+  <div class="card hover:border-blue-500/30 transition">
+    <p class="text-slate-400 text-xs font-medium mb-3">Clients uniques</p>
+    <p class="text-3xl font-bold text-blue-400">{{ unique_clients }}</p>
+    <p class="text-xs text-slate-500 mt-2">{{ messages_today }} messages aujourd'hui</p>
+  </div>
+
+  <div class="card hover:border-purple-500/30 transition">
+    <p class="text-slate-400 text-xs font-medium mb-3">Taux de conversion</p>
+    <p class="text-3xl font-bold text-purple-400">{{ conversion_rate }}%</p>
+    <p class="text-xs text-slate-500 mt-2">messages → commandes</p>
+  </div>
+
+</div>
+
+<!-- GRAPHIQUES -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+  <!-- COMMANDES 7 JOURS -->
+  <div class="card">
+    <h2 class="text-base font-semibold mb-6">📦 Commandes — 7 derniers jours</h2>
+    <div class="flex items-end gap-2 h-32">
+      {% set max_orders = orders_by_day | map(attribute='count') | max %}
+      {% for day in orders_by_day %}
+      <div class="flex-1 flex flex-col items-center gap-1">
+        <span class="text-xs text-slate-400">{{ day.count }}</span>
+        <div class="w-full rounded-t-md bg-indigo-500/30 border border-indigo-500/20 transition-all"
+          style="height: {{ ((day.count / (max_orders if max_orders > 0 else 1)) * 100) | int }}%;">
+        </div>
+        <span class="text-xs text-slate-500">{{ day.day }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- MESSAGES 7 JOURS -->
+  <div class="card">
+    <h2 class="text-base font-semibold mb-6">💬 Messages reçus — 7 derniers jours</h2>
+    <div class="flex items-end gap-2 h-32">
+      {% set max_msgs = messages_by_day | map(attribute='count') | max %}
+      {% for day in messages_by_day %}
+      <div class="flex-1 flex flex-col items-center gap-1">
+        <span class="text-xs text-slate-400">{{ day.count }}</span>
+        <div class="w-full rounded-t-md bg-green-500/30 border border-green-500/20 transition-all"
+          style="height: {{ ((day.count / (max_msgs if max_msgs > 0 else 1)) * 100) | int }}%;">
+        </div>
+        <span class="text-xs text-slate-500">{{ day.day }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUTS + TOP PRODUITS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+  <!-- STATUTS COMMANDES -->
+  <div class="card">
+    <h2 class="text-base font-semibold mb-5">📊 Statuts des commandes</h2>
+    <div class="space-y-3">
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+          <span class="text-sm text-slate-300">Confirmées</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-32 bg-slate-800 rounded-full h-1.5">
+            <div class="bg-indigo-400 h-1.5 rounded-full"
+              style="width: {{ ((orders_confirmed / (total_orders if total_orders > 0 else 1)) * 100) | int }}%"></div>
+          </div>
+          <span class="text-sm font-medium w-6 text-right">{{ orders_confirmed }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+          <span class="text-sm text-slate-300">En livraison</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-32 bg-slate-800 rounded-full h-1.5">
+            <div class="bg-yellow-400 h-1.5 rounded-full"
+              style="width: {{ ((orders_delivery / (total_orders if total_orders > 0 else 1)) * 100) | int }}%"></div>
+          </div>
+          <span class="text-sm font-medium w-6 text-right">{{ orders_delivery }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-green-400"></span>
+          <span class="text-sm text-slate-300">Livrées</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-32 bg-slate-800 rounded-full h-1.5">
+            <div class="bg-green-400 h-1.5 rounded-full"
+              style="width: {{ ((orders_delivered / (total_orders if total_orders > 0 else 1)) * 100) | int }}%"></div>
+          </div>
+          <span class="text-sm font-medium w-6 text-right">{{ orders_delivered }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-red-400"></span>
+          <span class="text-sm text-slate-300">Annulées</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-32 bg-slate-800 rounded-full h-1.5">
+            <div class="bg-red-400 h-1.5 rounded-full"
+              style="width: {{ ((orders_cancelled / (total_orders if total_orders > 0 else 1)) * 100) | int }}%"></div>
+          </div>
+          <span class="text-sm font-medium w-6 text-right">{{ orders_cancelled }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOP PRODUITS -->
+  <div class="card">
+    <h2 class="text-base font-semibold mb-5">🏆 Top produits commandés</h2>
+    {% if top_products %}
+    <div class="space-y-3">
+      {% for product, count in top_products %}
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-slate-500 text-xs font-bold w-4">{{ loop.index }}</span>
+          <span class="text-sm text-slate-300 truncate">{{ product }}</span>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="w-24 bg-slate-800 rounded-full h-1.5">
+            <div class="bg-purple-400 h-1.5 rounded-full"
+              style="width: {{ ((count / top_products[0][1]) * 100) | int }}%"></div>
+          </div>
+          <span class="text-sm font-medium w-6 text-right">{{ count }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-slate-600 text-sm">Aucune commande pour le moment</p>
+    {% endif %}
+  </div>
+
+</div>
+
+</div>
+
+{% endblock %}

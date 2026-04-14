@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+
+<div class="flex items-center gap-4 mb-8">
+  <a href="/dashboard/products"
+    class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition">
+    ←
+  </a>
+  <div>
+    <h1 class="text-3xl font-bold">Modifier le produit</h1>
+    <p class="text-slate-400 text-sm mt-1">{{ product.name }}</p>
+  </div>
+</div>
+
+<div class="card">
+
+  <form method="post" id="editForm" class="space-y-5">
+
+    <!-- NOM -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Nom du produit *</label>
+      <input
+        name="name"
+        value="{{ product.name }}"
+        required
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition"
+      />
+    </div>
+
+    <!-- PRIX -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Prix (FCFA) *</label>
+      <div class="relative">
+        <input
+          name="price"
+          type="number"
+          min="0"
+          value="{{ product.price }}"
+          required
+          class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 pr-16 text-white text-sm outline-none transition"
+        />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">FCFA</span>
+      </div>
+    </div>
+
+    <!-- DESCRIPTION -->
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Description <span class="text-slate-600">(optionnel)</span></label>
+      <textarea
+        name="description"
+        rows="3"
+        placeholder="Ex: Chaussure de sport, disponible en taille 40 à 45..."
+        class="w-full bg-slate-800/60 border border-slate-700 hover:border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition resize-none"
+      >{{ product.description or "" }}</textarea>
+    </div>
+
+    <!-- IMAGE ACTUELLE -->
+    {% if product.image %}
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-2">Image actuelle</label>
+      <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 flex items-center gap-4">
+        <img src="/{{ product.image }}" class="w-16 h-16 object-cover rounded-lg"/>
+        <div>
+          <p class="text-sm text-slate-300">Image existante</p>
+          <p class="text-xs text-slate-500 mt-1">Laissez vide pour conserver cette image</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- BOUTONS -->
+    <div class="flex gap-3 pt-2">
+      <button
+        type="submit"
+        id="submitBtn"
+        class="flex-1 bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
+        <span id="btnText">💾 Sauvegarder</span>
+        <div id="spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+      </button>
+      <a href="/dashboard/products"
+        class="px-6 py-3 rounded-xl font-medium text-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 transition text-slate-300">
+        Annuler
+      </a>
+    </div>
+
+  </form>
+
+</div>
+
+<!-- ZONE DANGER -->
+<div class="card mt-6 border-red-500/20">
+  <h2 class="text-sm font-semibold text-red-400 mb-3">⚠️ Zone dangereuse</h2>
+  <p class="text-xs text-slate-500 mb-4">La suppression est irréversible. Assurez-vous de vouloir supprimer ce produit.</p>
+  <a href="/dashboard/products/delete/{{ product.id }}"
+    onclick="return confirm('Supprimer définitivement {{ product.name }} ?')"
+    class="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 px-4 py-2 rounded-xl text-sm font-medium transition inline-block">
+    🗑 Supprimer ce produit
+  </a>
+</div>
+
+</div>
+
+<script>
+document.getElementById("editForm").addEventListener("submit", function(e){
+  const name = this.querySelector('[name="name"]').value.trim()
+  const price = this.querySelector('[name="price"]').value.trim()
+
+  if(!name){
+    e.preventDefault()
+    alert("Veuillez saisir le nom du produit")
+    return
+  }
+  if(!price || isNaN(price) || Number(price) <= 0){
+    e.preventDefault()
+    alert("Veuillez saisir un prix valide")
+    return
+  }
+
+  const btn = document.getElementById("submitBtn")
+  const text = document.getElementById("btnText")
+  const spinner = document.getElementById("spinner")
+  btn.disabled = true
+  btn.classList.add("opacity-70", "cursor-not-allowed")
+  text.textContent = "Sauvegarde..."
+  spinner.classList.remove("hidden")
+})
+</script>
+
+{% endblock %}

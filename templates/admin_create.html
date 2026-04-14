@@ -1,0 +1,98 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto">
+
+<h1 class="text-3xl font-bold mb-8">
+Créer un Admin
+</h1>
+
+<div class="bg-slate-900 p-6 rounded-xl border border-slate-700">
+
+<!-- 🔴 erreur globale -->
+{% if error %}
+<p class="text-red-400 mb-4">{{ error }}</p>
+{% endif %}
+
+<!-- 🟢 succès -->
+{% if success %}
+<p class="text-green-400 mb-4">{{ success }}</p>
+{% endif %}
+
+<form method="post" class="space-y-4">
+
+<!-- NOM -->
+<div>
+<label class="text-sm text-slate-400">Nom</label>
+<input
+name="name"
+value="{{ form.name if form else '' }}"
+class="w-full bg-slate-800 p-2 rounded border {% if errors and errors.name %}border-red-500{% else %}border-slate-700{% endif %}"
+required
+/>
+{% if errors and errors.name %}
+<p class="text-red-400 text-sm mt-1">{{ errors.name }}</p>
+{% endif %}
+</div>
+
+<!-- EMAIL -->
+<div>
+<label class="text-sm text-slate-400">Email</label>
+<input
+type="email"
+name="email"
+value="{{ form.email if form else '' }}"
+class="w-full bg-slate-800 p-2 rounded border {% if errors and errors.email %}border-red-500{% else %}border-slate-700{% endif %}"
+required
+/>
+{% if errors and errors.email %}
+<p class="text-red-400 text-sm mt-1">{{ errors.email }}</p>
+{% endif %}
+</div>
+
+<!-- PASSWORD -->
+<div>
+<label class="text-sm text-slate-400">Mot de passe</label>
+<input
+type="password"
+name="password"
+class="w-full bg-slate-800 p-2 rounded border {% if errors and errors.password %}border-red-500{% else %}border-slate-700{% endif %}"
+required
+/>
+{% if errors and errors.password %}
+<p class="text-red-400 text-sm mt-1">{{ errors.password }}</p>
+{% endif %}
+</div>
+
+<!-- ROLE -->
+<div>
+<label class="text-sm text-slate-400">Rôle</label>
+<select
+name="role"
+class="w-full bg-slate-800 p-2 rounded border-slate-700"
+>
+<option value="admin" {% if form and form.role == "admin" %}selected{% endif %}>
+Admin
+</option>
+
+{% if admin.role == "superadmin" %}
+<option value="superadmin" {% if form and form.role == "superadmin" %}selected{% endif %}>
+Super Admin
+</option>
+{% endif %}
+
+</select>
+</div>
+
+<button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded w-full">
+Créer
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+{% endblock %}
