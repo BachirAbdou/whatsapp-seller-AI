@@ -631,18 +631,6 @@ await restoreSessions()
 
 }
 */
-const express = require('express');
-const PORT = process.env.PORT || 3000;
-
-// route simple
-app.get('/', (req, res) => {
-  res.send('WhatsApp AI bot is running 🚀');
-});
-
-// IMPORTANT
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 
 const express = require("express")
@@ -1535,16 +1523,20 @@ delete messageQueues[seller_id]
 
 }
 
+const PORT = process.env.PORT || 10000;
+
 if (!cluster.isPrimary) {
 
-app.listen(3000, async ()=>{
+  app.get('/', (req, res) => {
+    res.send('WhatsApp AI bot is running 🚀');
+  });
 
-console.log("Worker", cluster.worker.id, "en ligne")
+  app.listen(PORT, async () => {
+    console.log(`🔥 Worker ${cluster.worker.id} running on port ${PORT}`);
 
-if(cluster.worker.id === 1){
-await restoreSessions()
-}
-
-})
+    if(cluster.worker.id === 1){
+      await restoreSessions();
+    }
+  });
 
 }
