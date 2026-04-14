@@ -4,7 +4,7 @@ import os
 
 def send_verification_email(to_email, token):
 
-    link = f"http://127.0.0.1:8000/verify-email/{token}"
+    link = f"https://whatsapp-seller-ai-1.onrender.com/verify-email/{token}"
 
     html = f"""
     <html>
