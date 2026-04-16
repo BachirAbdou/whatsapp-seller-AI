@@ -1400,8 +1400,7 @@ try{
 }
 
 // ✅ seulement si actif → on envoie à FastAPI
-response = await fetch(
-`http://localhost:8000/whatsapp/${seller_id}`,
+response = await fetch(`https://whatsapp-seller-ai-1.onrender.com/whatsapp/${seller_id}`,
 {
 method:"POST",
 headers:{
