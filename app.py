@@ -36,7 +36,7 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
         return RedirectResponse("/pricing?expired=true")
 
     if "text/html" in request.headers.get("accept", ""):
-        return RedirectResponse("/login")
+        return RedirectResponse("https://whatsapp-seller-ai-1.onrender.com/login")
 
     return JSONResponse(
         status_code=exc.status_code,
