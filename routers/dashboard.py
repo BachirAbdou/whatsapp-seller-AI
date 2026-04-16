@@ -181,6 +181,9 @@ def connect_whatsapp_qr(seller = Depends(get_current_seller)):
     try:
         resp = requests.get(f"{BASE_URL}/qr/{seller.id}", timeout=10)
         data = resp.json()
+
+        print("QR STATUS NODE:", data)
+    
     except:
         return Response(status_code=204)
 
