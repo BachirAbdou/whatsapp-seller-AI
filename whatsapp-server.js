@@ -1386,7 +1386,7 @@ try{
 let subCheck
 
 try{
-    subCheck = await fetch(`https://whatsapp-seller-ai-1.onrender.coms/api/check_subscription/${seller_id}`)
+    subCheck = await fetch(`https://whatsapp-seller-ai-1.onrender.com/api/check_subscription/${seller_id}`)
     const subData = await subCheck.json()
 
     if(!subData.active){
