@@ -187,7 +187,12 @@ def connect_whatsapp_qr(seller = Depends(get_current_seller)):
     except:
         return Response(status_code=204)
 
-    if data.get("status") != "qr_ready":
+    if data["status"] == "waiting":
+        print("QR pas encore prêt")
+        return Response(status_code=204)
+
+    if data["status"] == "regenerating":
+        print("QR en régénération")
         return Response(status_code=204)
 
     qr_text = data.get("qr")
