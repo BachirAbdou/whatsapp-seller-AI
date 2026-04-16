@@ -27,7 +27,7 @@ app = FastAPI()
 async def custom_http_exception_handler(request: Request, exc: HTTPException):
 
     if exc.status_code == 401:
-        return RedirectResponse("/login")
+        return RedirectResponse("https://whatsapp-seller-ai-1.onrender.com/login")
 
     if exc.status_code == 402:
         return RedirectResponse("/pending-approval")  # 👈 IMPORTANT
