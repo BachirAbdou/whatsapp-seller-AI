@@ -176,7 +176,7 @@ def connect_whatsapp_qr(seller = Depends(get_current_seller)):
 
     session.close()
 
-    resp = requests.get(f"http://localhost:3000/qr/{seller.id}")
+    resp = requests.get(f"https://whatsapp-seller-ai.onrender.com/qr/{seller.id}")
     data = resp.json()
 
     if data["status"] != "qr_ready":
@@ -205,7 +205,7 @@ def connect_whatsapp_qr(seller = Depends(get_current_seller)):
 @router.get("/dashboard/whatsapp_status")
 def whatsapp_status(seller = Depends(get_current_seller)):
 
-    resp = requests.get(f"http://localhost:3000/status/{seller.id}")
+    resp = requests.get(f"https://ton-service-node.onrender.com/status/{seller.id}")
 
     return resp.json()
 
