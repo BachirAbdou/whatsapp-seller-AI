@@ -1172,43 +1172,11 @@ async function restoreSessions(){
     }
 }
 
-/*app.post("/connect", async (req,res)=>{
-
-const seller_id = String(req.body.seller_id)
-
-// 🔥 si déjà connecté → ok
-if(clientStatus.get(seller_id) === "connected"){
-    return res.json({message:"Déjà connecté"})
-}
-
-// 🔥 si QR expiré ou bloqué → reset
-const status = clientStatus.get(seller_id)
-
-if(
-    status === "qr_waiting" && !qrCodes[seller_id] ||
-    status === "qr_expired"
-){
-    console.log("Reset session", seller_id)
-
-    const client = clients[seller_id]
-
-    if(client){
-        try{
-            client.end()
-            client.ev.removeAllListeners()
-        }catch(e){}
-    }
-
-    delete clients[seller_id]
-    delete qrCodes[seller_id]
-    connectingSellers.delete(seller_id)
-}
-
-// 🔥 relancer connexion
-await connectSeller(seller_id)
-
-res.json({message:"Connexion lancée"})
-})*/
+app.post("/connect", async (req,res)=>{
+    const seller_id = String(req.body.seller_id)
+    await connectSeller(seller_id)
+    res.json({message:"Connexion lancée"})
+})
 app.post("/reset/:seller_id", async (req, res) => {
 
 const seller_id = String(req.params.seller_id)
@@ -1306,7 +1274,7 @@ if(status === "qr_expired"){
 }
 
 if(!qr){
-return res.json({status:"waiting"})
+return res.json({status:"qr_waiting"})
 }
 
 res.json({
