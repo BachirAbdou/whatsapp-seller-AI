@@ -161,7 +161,8 @@ def verify_email(token: str):
     session.commit()
     session.close()
 
-    return RedirectResponse("/login?verified=1", status_code=303)
+    BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
+    return RedirectResponse(f"{BASE_URL}/login?verified=1", status_code=303)
 
 @router.get("/login")
 def login_page(request: Request):
