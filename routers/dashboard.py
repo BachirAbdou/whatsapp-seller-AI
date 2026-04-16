@@ -176,28 +176,26 @@ def connect_whatsapp_qr(seller = Depends(get_current_seller)):
 
     session.close()
 
-    resp = requests.get(f"https://whatsapp-seller-ai.onrender.com/qr/{seller.id}")
-    data = resp.json()
+    BASE_URL = "https://TON-NODE-SERVICE.onrender.com"
 
-    if data["status"] != "qr_ready":
+    try:
+        resp = requests.get(f"{BASE_URL}/qr/{seller.id}", timeout=10)
+        data = resp.json()
+    except:
         return Response(status_code=204)
-    '''if data["status"] != "qr_ready":
-        img = Image.new("RGB", (300,300), "black")
-        draw = ImageDraw.Draw(img)
-        draw.text((60,140), "Code QR  en attente...", fill="white")
 
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        buf.seek(0)
+    if data.get("status") != "qr_ready":
+        return Response(status_code=204)
 
-        return StreamingResponse(buf, media_type="image/png")'''
+    qr_text = data.get("qr")
 
-    qr_text = data["qr"]
+    if not qr_text:
+        return Response(status_code=204)
 
     img = qrcode.make(qr_text)
 
     buf = BytesIO()
-    img.save(buf)
+    img.save(buf, format="PNG")
     buf.seek(0)
 
     return StreamingResponse(buf, media_type="image/png")
